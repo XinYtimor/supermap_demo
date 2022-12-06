@@ -1,0 +1,29 @@
+// 修改默认的 el-button 基础样式
+:deep(.el-button) {
+  border-radius: 6px;
+  padding: 18px 20px;
+  // height: 54px;
+  font-size: 18px;
+  font-weight: 400;
+  // color: #FFFFFF;
+  // line-height: 110px;
+}
+
+:deep(.el-button--primary) {
+  background: #409EFF;
+}
+:deep(.el-button--danger) {
+  background: #F56C6C;
+}
+
+
+// dialog 样式
+:deep(.el-dialog){
+  border-radius: 6px;
+  color: #FFFFFF;
+}
+
+
+.globalElMessage {
+  z-index: 9999 !important;
+}
