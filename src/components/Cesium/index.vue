@@ -18,6 +18,9 @@ import {
   removeAllEntity,
   handleEdit,
   drawOrdinaryEntity,
+  descarteToScreenCoordinates,
+  latitudeAndLongitudeToDescarte,
+  screenCoordinatesTolatitudeAndLongitude,
 } from "./mapEvent";
 import pic from "../../assets/img/position.png";
 const select = ref("");
@@ -108,6 +111,12 @@ const mapOptions = [
   },
 ];
 const change = (e) => {
+  let point = {
+    longitude: 116.45388048381606,
+    latitude: 39.90368684766768,
+    height: 0,
+  };
+  descarteToScreenCoordinates(viewer, latitudeAndLongitudeToDescarte(point));
   viewer.entities.removeAll();
   let target = e[e.length - 1];
   switch (target) {
@@ -138,6 +147,7 @@ onMounted(() => {
     infoBox: false,
     selectionIndicator: false,
   });
+  screenCoordinatesTolatitudeAndLongitude(viewer);
   viewer.entities.removeAll();
   viewer.imageryLayers.addImageryProvider(
     new Cesium.BingMapsImageryProvider({

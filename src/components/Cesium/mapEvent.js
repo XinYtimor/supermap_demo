@@ -221,3 +221,21 @@ export const drawCanEditPolygon = (materialItem) => {
     handleEdit(viewer, entity);
   }, Cesium.ScreenSpaceEventType.RIGHT_CLICK);
 };
+
+//经纬度转笛卡尔坐标
+export const latitudeAndLongitudeToDescarte = (position) => {
+  position = Cesium.Cartesian3.fromDegrees(
+    position.longitude,
+    position.latitude,
+    position.height
+  );
+  return position;
+};
+//笛卡尔坐标转屏幕坐标
+export function descarteToScreenCoordinates(viewer, position) {
+  let screenCoordinates = Cesium.SceneTransforms.wgs84ToWindowCoordinates(
+    viewer.scene,
+    position
+  );
+  return screenCoordinates;
+}
