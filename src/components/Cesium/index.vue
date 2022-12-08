@@ -20,7 +20,7 @@ import {
   drawOrdinaryEntity,
   descarteToScreenCoordinates,
   latitudeAndLongitudeToDescarte,
-  screenCoordinatesTolatitudeAndLongitude,
+  screenCoordinatesToLatitudeAndLongitude,
 } from "./mapEvent";
 import pic from "../../assets/img/position.png";
 const select = ref("");
@@ -116,7 +116,8 @@ const change = (e) => {
     latitude: 39.90368684766768,
     height: 0,
   };
-  descarteToScreenCoordinates(viewer, latitudeAndLongitudeToDescarte(point));
+  screenCoordinatesToLatitudeAndLongitude(viewer);
+  // descarteToScreenCoordinates(viewer, latitudeAndLongitudeToDescarte(point));
   viewer.entities.removeAll();
   let target = e[e.length - 1];
   switch (target) {
@@ -147,7 +148,7 @@ onMounted(() => {
     infoBox: false,
     selectionIndicator: false,
   });
-  screenCoordinatesTolatitudeAndLongitude(viewer);
+
   viewer.entities.removeAll();
   viewer.imageryLayers.addImageryProvider(
     new Cesium.BingMapsImageryProvider({
@@ -189,7 +190,7 @@ onMounted(() => {
     dirLightOptions
   );
   scene.addLightSource(directionalLight_1);
-  // viewer.scene.globe.depthTestAgainstTerrain = true;
+  viewer.scene.globe.depthTestAgainstTerrain = true;
 
   try {
     //打开所发布三维服务下的所有图层

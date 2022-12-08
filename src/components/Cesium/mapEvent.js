@@ -232,10 +232,34 @@ export const latitudeAndLongitudeToDescarte = (position) => {
   return position;
 };
 //笛卡尔坐标转屏幕坐标
-export function descarteToScreenCoordinates(viewer, position) {
+export const descarteToScreenCoordinates = (viewer, position) => {
   let screenCoordinates = Cesium.SceneTransforms.wgs84ToWindowCoordinates(
     viewer.scene,
     position
   );
   return screenCoordinates;
-}
+};
+//获取屏幕坐标并转经纬度
+export const screenCoordinatesToLatitudeAndLongitude = (viewer) => {
+  let handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+  handler.setInputAction((e) => {
+    var position = e.endPosition;
+    var last = scene.pickPosition(position);
+    console.log("position", position);
+    //计算该点与视口位置点坐标的距离
+    var distance = Cesium.Cartesian3.distance(viewPosition, last);
+
+    if (distance > 0) {
+      // 将鼠标当前点坐标转化成经纬度
+      var cartographic = Cesium.Cartographic.fromCartesian(last);
+      var longitude = Cesium.Math.toDegrees(cartographic.longitude);
+      var latitude = Cesium.Math.toDegrees(cartographic.latitude);
+      var height = cartographic.height;
+      return {
+        longitude,
+        latitude,
+        height,
+      };
+    }
+  }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+};
