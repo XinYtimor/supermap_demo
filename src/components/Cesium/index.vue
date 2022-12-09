@@ -8,10 +8,12 @@
     />
   </div>
   <div id="cesiumContainer"></div>
+  <div id="label" style="display: none">label</div>
 </template>
 
 <script setup>
 import { reactive, ref, onMounted } from "vue";
+import divLabel from "./createDiv";
 import {
   pickUpLocation,
   addIconPoint,
@@ -23,6 +25,8 @@ import {
   screenCoordinatesToLatitudeAndLongitude,
 } from "./mapEvent";
 import pic from "../../assets/img/position.png";
+import cerateDiv from "./createDiv";
+
 const select = ref("");
 const mapOptions = [
   {
@@ -109,7 +113,33 @@ const mapOptions = [
     value: "态势推演",
     label: "态势推演",
   },
+  {
+    value: "创建div",
+    label: "创建div",
+    children: [
+      {
+        value: "新建div",
+        label: "新建div",
+      },
+      {
+        value: "更新div位置",
+        label: "更新div位置",
+      },
+    ],
+  },
 ];
+const createDivLabel = () => {
+  let val = {
+    viewer: viewer,
+    position: [116.45388048381606, 39.90368684766768],
+    height: 0,
+    dom: document.getElementById("label"),
+  };
+  window.layer = new cerateDiv(val);
+};
+const updateDivLabel = () => {
+  layer.changePosition([116.85388048381606, 40.90368684766768]);
+};
 const change = (e) => {
   let point = {
     longitude: 116.45388048381606,
@@ -129,6 +159,12 @@ const change = (e) => {
       break;
     case "面":
       drawOrdinaryEntity(viewer, "Polygon");
+      break;
+    case "新建div":
+      createDivLabel();
+      break;
+    case "更新div位置":
+      updateDivLabel();
       break;
     default:
       console.log("未匹配");
@@ -238,5 +274,11 @@ onMounted(() => {
   top: 10vh;
   left: 10rem;
   z-index: 1;
+}
+#label {
+  width: 100px;
+  height: 100px;
+  background-color: #fff;
+  font-size: 30px;
 }
 </style>
