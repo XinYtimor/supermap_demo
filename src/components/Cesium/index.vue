@@ -23,6 +23,7 @@ import {
   descarteToScreenCoordinates,
   latitudeAndLongitudeToDescarte,
   screenCoordinatesToLatitudeAndLongitude,
+  visibleRange,
 } from "./mapEvent";
 import pic from "../../assets/img/position.png";
 import cerateDiv from "./createDiv";
@@ -166,6 +167,9 @@ const change = (e) => {
     case "更新div位置":
       updateDivLabel();
       break;
+    case "可视域分析":
+      visibleRange(viewer);
+      break;
     default:
       console.log("未匹配");
       break;
@@ -230,7 +234,9 @@ onMounted(() => {
 
   try {
     //打开所发布三维服务下的所有图层
-    var url = "http://10.12.6.38:8090/iserver/services/3D-CBD/rest/realspace";
+    // var url = "http://10.12.6.38:8090/iserver/services/3D-CBD/rest/realspace";
+    const url =
+      "http://www.supermapol.com/realspace/services/3D-CBD/rest/realspace";
     var promise = scene.open(url);
     Cesium.when(
       promise,

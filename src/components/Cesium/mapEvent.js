@@ -263,3 +263,66 @@ export const screenCoordinatesToLatitudeAndLongitude = (viewer) => {
     }
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 };
+
+//可视域分析
+export const visibleRange = (viewer) => {
+  let handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+  // viewer.entities.removeAll();
+  window.scene = viewer.scene;
+  scene.viewFlag = true;
+  window.pointHandler = new Cesium.DrawHandler(viewer, Cesium.DrawMode.Point);
+  // 创建可视域分析对象
+  window.viewshed3D = new Cesium.ViewShed3D(scene);
+  viewshed3D.distance = 0.1;
+  // scene.viewFlag = true;
+
+  //激活绘制点类
+  pointHandler.activate();
+  var viewPosition;
+  pointHandler.drawEvt.addEventListener(function (result) {
+    var point = result.object;
+    var position = point.position;
+    viewPosition = position;
+    console.log("position", position);
+    // 将获取的点的位置转化成经纬度
+    var cartographic = Cesium.Cartographic.fromCartesian(position);
+    var longitude = Cesium.Math.toDegrees(cartographic.longitude);
+    var latitude = Cesium.Math.toDegrees(cartographic.latitude);
+    var height = cartographic.height + 1.8;
+    point.position = Cesium.Cartesian3.fromDegrees(longitude, latitude, height);
+    console.log("position", point.position);
+    if (scene.viewFlag) {
+      // 设置视口位置
+      viewshed3D.viewPosition = [longitude, latitude, height];
+      viewshed3D.build();
+      // 将标记置为false以激活鼠标移动回调里面的设置可视域操作
+      scene.viewFlag = false;
+    }
+  });
+
+  handler.setInputAction(function (e) {
+    // 若此标记为false，则激活对可视域分析对象的操作
+    if (!scene.viewFlag) {
+      //获取鼠标屏幕坐标,并将其转化成笛卡尔坐标
+      var position = e.endPosition;
+      var last = scene.pickPosition(position);
+
+      //计算该点与视口位置点坐标的距离
+      var distance = Cesium.Cartesian3.distance(viewPosition, last);
+
+      if (distance > 0) {
+        // 将鼠标当前点坐标转化成经纬度
+        var cartographic = Cesium.Cartographic.fromCartesian(last);
+        var longitude = Cesium.Math.toDegrees(cartographic.longitude);
+        var latitude = Cesium.Math.toDegrees(cartographic.latitude);
+        var height = cartographic.height;
+        // 通过该点设置可视域分析对象的距离及方向
+        viewshed3D.setDistDirByPoint([longitude, latitude, height]);
+      }
+    }
+  }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+  handler.setInputAction(function (e) {
+    //鼠标右键事件回调，不再执行鼠标移动事件中对可视域的操作
+    scene.viewFlag = true;
+  }, Cesium.ScreenSpaceEventType.RIGHT_CLICK);
+};
