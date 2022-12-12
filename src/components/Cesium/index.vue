@@ -24,6 +24,8 @@ import {
   latitudeAndLongitudeToDescarte,
   screenCoordinatesToLatitudeAndLongitude,
   visibleRange,
+  createDiv,
+  updateDivLabel,
 } from "./mapEvent";
 import pic from "../../assets/img/position.png";
 import cerateDiv from "./createDiv";
@@ -129,18 +131,7 @@ const mapOptions = [
     ],
   },
 ];
-const createDivLabel = () => {
-  let val = {
-    viewer: viewer,
-    position: [116.45388048381606, 39.90368684766768],
-    height: 0,
-    dom: document.getElementById("label"),
-  };
-  window.layer = new cerateDiv(val);
-};
-const updateDivLabel = () => {
-  layer.changePosition([116.85388048381606, 40.90368684766768]);
-};
+
 const change = (e) => {
   let point = {
     longitude: 116.45388048381606,
@@ -162,10 +153,18 @@ const change = (e) => {
       drawOrdinaryEntity(viewer, "Polygon");
       break;
     case "新建div":
-      createDivLabel();
+      createDiv(
+        viewer,
+        "div1",
+        { longitude: 116.45388048381606, latitude: 39.90368684766768 },
+        document.getElementById("label")
+      );
       break;
     case "更新div位置":
-      updateDivLabel();
+      updateDivLabel("div1", {
+        longitude: 116.85388048381606,
+        latitude: 40.90368684766768,
+      });
       break;
     case "可视域分析":
       visibleRange(viewer);

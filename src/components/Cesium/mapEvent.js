@@ -1,3 +1,4 @@
+import cerateDiv from "./createDiv";
 export const pickUpLocation = (viewer, fn) => {
   let position;
   let handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
@@ -239,6 +240,7 @@ export const descarteToScreenCoordinates = (viewer, position) => {
   );
   return screenCoordinates;
 };
+
 //获取屏幕坐标并转经纬度
 export const screenCoordinatesToLatitudeAndLongitude = (viewer) => {
   let handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
@@ -325,4 +327,20 @@ export const visibleRange = (viewer) => {
     //鼠标右键事件回调，不再执行鼠标移动事件中对可视域的操作
     scene.viewFlag = true;
   }, Cesium.ScreenSpaceEventType.RIGHT_CLICK);
+};
+
+//创建div
+export const createDiv = (viewer, id, position, el) => {
+  let val = {
+    viewer: viewer,
+    position: [position.longitude, position.latitude],
+    height: 0,
+    dom: el,
+  };
+  window.layer = {};
+  layer[id] = new cerateDiv(val);
+};
+
+export const updateDivLabel = (id, position) => {
+  window.layer[id].changePosition([position.longitude, position.latitude]);
 };
