@@ -16,7 +16,8 @@ import { reactive, ref, onMounted } from "vue";
 import divLabel from "./createDiv";
 import {
   pickUpLocation,
-  addIconPoint,
+  addIconPointByClick,
+  addIconPointByPosition,
   removeAllEntity,
   handleEdit,
   drawOrdinaryEntity,
@@ -26,6 +27,9 @@ import {
   visibleRange,
   createDiv,
   updateDivLabel,
+  updataEntityPosition,
+  drawPolyline,
+  flyToPoint,
 } from "./mapEvent";
 import pic from "../../assets/img/position.png";
 import cerateDiv from "./createDiv";
@@ -59,6 +63,20 @@ const mapOptions = [
       {
         value: "动态标绘",
         label: "动态标绘",
+        children: [
+          {
+            value: "动态点",
+            label: "动态点",
+          },
+          {
+            value: "轨迹线",
+            label: "轨迹线",
+          },
+          {
+            value: "更改线的位置",
+            label: "更改线的位置",
+          },
+        ],
       },
     ],
   },
@@ -144,7 +162,7 @@ const change = (e) => {
   let target = e[e.length - 1];
   switch (target) {
     case "点":
-      addIconPoint(viewer, pic, "test", "位置1", "#d81e06");
+      addIconPointByClick(viewer, pic, "test", "位置1", "#d81e06");
       break;
     case "线":
       drawOrdinaryEntity(viewer, "Line");
@@ -169,10 +187,623 @@ const change = (e) => {
     case "可视域分析":
       visibleRange(viewer);
       break;
+    case "动态点":
+      updatePoint();
+      break;
+    case "轨迹线":
+      playTrack();
+      break;
+    case "更改线的位置":
+      updateLine();
+      break;
     default:
       console.log("未匹配");
       break;
   }
+};
+
+let tempPoints = [];
+let tempEntities = [];
+//轨迹线
+const createTrajectoryline = (posi) => {
+  tempPoints.push(posi);
+  let tempLength = tempPoints.length;
+
+  if (tempLength > 1) {
+    let pointline = drawPolyline("test2", [
+      tempPoints[tempPoints.length - 2],
+      tempPoints[tempPoints.length - 1],
+    ]);
+    tempEntities.push(pointline);
+  }
+};
+const list = [
+  {
+    longitude: 116.45448909735077,
+    latitude: 39.90664167026053,
+    height: 5.01471818390532,
+  },
+  {
+    longitude: 116.45437251002404,
+    latitude: 39.90663531305779,
+    height: 5.020913836818234,
+  },
+  {
+    longitude: 116.45428477913356,
+    latitude: 39.90663491128082,
+    height: 5.012471371515432,
+  },
+  {
+    longitude: 116.45419713838585,
+    latitude: 39.906636677800876,
+    height: 5.012186060859659,
+  },
+  {
+    longitude: 116.45407274475615,
+    latitude: 39.90663918524774,
+    height: 5.011370022739517,
+  },
+  {
+    longitude: 116.4539257328469,
+    latitude: 39.90664214836798,
+    height: 5.010575102190116,
+  },
+  {
+    longitude: 116.4537560225465,
+    latitude: 39.906641221822625,
+    height: 5.006942342246863,
+  },
+  {
+    longitude: 116.45362879866248,
+    latitude: 39.906639434371925,
+    height: 5.015870305783903,
+  },
+  {
+    longitude: 116.45348466931085,
+    latitude: 39.906644514129724,
+    height: 5.010476871842427,
+  },
+  {
+    longitude: 116.45332922232326,
+    latitude: 39.90664330242107,
+    height: 5.006589597903376,
+  },
+  {
+    longitude: 116.45322757279341,
+    latitude: 39.90664100212228,
+    height: 5.015905638080603,
+  },
+  {
+    longitude: 116.45313142570888,
+    latitude: 39.906649456551726,
+    height: 5.0133712493683396,
+  },
+  {
+    longitude: 116.45304658361835,
+    latitude: 39.90665334118884,
+    height: 5.0084597803539195,
+  },
+  {
+    longitude: 116.4530699035403,
+    latitude: 39.90664854664485,
+    height: 5.007303211281564,
+  },
+  {
+    longitude: 116.45296839526611,
+    latitude: 39.90665493307963,
+    height: 5.009917255766416,
+  },
+  {
+    longitude: 116.45286950663481,
+    latitude: 39.906656925283144,
+    height: 5.009358674884923,
+  },
+  {
+    longitude: 116.45277366568382,
+    latitude: 39.90666537456599,
+    height: 5.007265246475042,
+  },
+  {
+    longitude: 116.45269485942018,
+    latitude: 39.90667783349985,
+    height: 5.008079461678473,
+  },
+  {
+    longitude: 116.45261585375036,
+    latitude: 39.90668595461474,
+    height: 5.006054136136206,
+  },
+  {
+    longitude: 116.45256535752677,
+    latitude: 39.90670440220981,
+    height: 5.005039598600874,
+  },
+  {
+    longitude: 116.45251722950859,
+    latitude: 39.90670537150528,
+    height: 5.005053452569678,
+  },
+  {
+    longitude: 116.45244653759129,
+    latitude: 39.90671115547439,
+    height: 5.007471112196971,
+  },
+  {
+    longitude: 116.4523505903781,
+    latitude: 39.90673711341254,
+    height: 5.004754814079027,
+  },
+  {
+    longitude: 116.4522316602026,
+    latitude: 39.906754821577884,
+    height: 5.008480150218423,
+  },
+  {
+    longitude: 116.45217498204947,
+    latitude: 39.906769112779415,
+    height: 5.004586360468667,
+  },
+  {
+    longitude: 116.45210118616144,
+    latitude: 39.90678376596676,
+    height: 5.000515057717475,
+  },
+  {
+    longitude: 116.45203871871055,
+    latitude: 39.90678721126967,
+    height: 5.007998577449604,
+  },
+  {
+    longitude: 116.4519875573272,
+    latitude: 39.906790442562254,
+    height: 5.003139456931709,
+  },
+  {
+    longitude: 116.45194492818742,
+    latitude: 39.906795690920106,
+    height: 5.006057192263041,
+  },
+  {
+    longitude: 116.45181141515344,
+    latitude: 39.90679617758156,
+    height: 5.0105520430500885,
+  },
+  {
+    longitude: 116.45171207788505,
+    latitude: 39.90678940205663,
+    height: 5.004184959345786,
+  },
+  {
+    longitude: 116.45166149164861,
+    latitude: 39.90676192820926,
+    height: 5.0038375411129765,
+  },
+  {
+    longitude: 116.45159136972084,
+    latitude: 39.906728377041844,
+    height: 5.005023714141948,
+  },
+  {
+    longitude: 116.45159317862196,
+    latitude: 39.90664793549015,
+    height: 5.00687380788924,
+  },
+  {
+    longitude: 116.45159045221553,
+    latitude: 39.9065189096833,
+    height: 5.005963334460019,
+  },
+  {
+    longitude: 116.451609825171,
+    latitude: 39.90640159115586,
+    height: 5.006331858329932,
+  },
+  {
+    longitude: 116.4516015238892,
+    latitude: 39.90643826827206,
+    height: 5.002974356220881,
+  },
+  {
+    longitude: 116.45158603554825,
+    latitude: 39.90638193816972,
+    height: 5.009982890162908,
+  },
+  {
+    longitude: 116.45160212938487,
+    latitude: 39.906320818911595,
+    height: 5.001321133951964,
+  },
+  {
+    longitude: 116.45160659930141,
+    latitude: 39.906255788851155,
+    height: 5.002709601051655,
+  },
+  {
+    longitude: 116.45160472577817,
+    latitude: 39.90616025999335,
+    height: 5.0082191535130125,
+  },
+  {
+    longitude: 116.45160928251306,
+    latitude: 39.9061028083117,
+    height: 5.007543318792865,
+  },
+  {
+    longitude: 116.45159383864178,
+    latitude: 39.906039505744424,
+    height: 5.008643071991708,
+  },
+  {
+    longitude: 116.4515896182136,
+    latitude: 39.905967673243964,
+    height: 5.003781261071823,
+  },
+  {
+    longitude: 116.45157999894464,
+    latitude: 39.90590722895562,
+    height: 5.000101242791941,
+  },
+  {
+    longitude: 116.45156728388237,
+    latitude: 39.90582789212959,
+    height: 5.0020564077701355,
+  },
+  {
+    longitude: 116.45156009483416,
+    latitude: 39.90574054436926,
+    height: 4.998245236302898,
+  },
+  {
+    longitude: 116.45156205541022,
+    latitude: 39.90569386619719,
+    height: 5.003263639965413,
+  },
+  {
+    longitude: 116.4515499108057,
+    latitude: 39.90563715996874,
+    height: 5.007345831051162,
+  },
+  {
+    longitude: 116.45154045232924,
+    latitude: 39.90557234187873,
+    height: 5.005494091243214,
+  },
+  {
+    longitude: 116.45155141709266,
+    latitude: 39.905721626884194,
+    height: 5.001918594552164,
+  },
+  {
+    longitude: 116.45154296031248,
+    latitude: 39.90564363854893,
+    height: 4.999173948446627,
+  },
+  {
+    longitude: 116.4515527454735,
+    latitude: 39.90552515083563,
+    height: 4.999794429504856,
+  },
+  {
+    longitude: 116.45154042196248,
+    latitude: 39.90541690976726,
+    height: 5.0060632046458595,
+  },
+  {
+    longitude: 116.45153924976655,
+    latitude: 39.90530747528389,
+    height: 5.004578956609565,
+  },
+  {
+    longitude: 116.45141642837368,
+    latitude: 39.90528484509431,
+    height: 4.999392437995772,
+  },
+  {
+    longitude: 116.45126951997779,
+    latitude: 39.90527528330944,
+    height: 5.002766185405988,
+  },
+  {
+    longitude: 116.45113089951951,
+    latitude: 39.90526764594908,
+    height: 5.0014112418700725,
+  },
+  {
+    longitude: 116.45098233649482,
+    latitude: 39.90526438867059,
+    height: 5.003022984342314,
+  },
+  {
+    longitude: 116.4507388653848,
+    latitude: 39.90526094970037,
+    height: 4.996705079530373,
+  },
+  {
+    longitude: 116.45060047149542,
+    latitude: 39.90527414689387,
+    height: 4.997630740292467,
+  },
+  {
+    longitude: 116.45063993393094,
+    latitude: 39.90529637069526,
+    height: 5.003297663759181,
+  },
+  {
+    longitude: 116.4505808756962,
+    latitude: 39.90528497591252,
+    height: 5.006916311967754,
+  },
+  {
+    longitude: 116.45036137807153,
+    latitude: 39.90528519564716,
+    height: 5.003608281790695,
+  },
+  {
+    longitude: 116.45021386684513,
+    latitude: 39.90527768784947,
+    height: 5.0024824603143765,
+  },
+  {
+    longitude: 116.45008070881418,
+    latitude: 39.905280366576015,
+    height: 5.002205538935539,
+  },
+  {
+    longitude: 116.44993095362602,
+    latitude: 39.9052854664124,
+    height: 4.99738152913701,
+  },
+  {
+    longitude: 116.44987274603008,
+    latitude: 39.90528874280421,
+    height: 5.004896972428963,
+  },
+  {
+    longitude: 116.44981749433964,
+    latitude: 39.905302424566855,
+    height: 5.001199894232653,
+  },
+  {
+    longitude: 116.44975947191541,
+    latitude: 39.905318307328145,
+    height: 5.019892817360989,
+  },
+  {
+    longitude: 116.44968447975248,
+    latitude: 39.90532191034195,
+    height: 5.015452697798712,
+  },
+  {
+    longitude: 116.44961208685996,
+    latitude: 39.90530866809747,
+    height: 5.011521880528256,
+  },
+  {
+    longitude: 116.44956167134416,
+    latitude: 39.905246957312634,
+    height: 5.017018801355974,
+  },
+  {
+    longitude: 116.44946195762147,
+    latitude: 39.905221896686264,
+    height: 5.016441306092792,
+  },
+  {
+    longitude: 116.44939563383423,
+    latitude: 39.90518172223821,
+    height: 5.012099066230931,
+  },
+  {
+    longitude: 116.4493020226906,
+    latitude: 39.905150529177234,
+    height: 5.013655875625105,
+  },
+  {
+    longitude: 116.4490254182844,
+    latitude: 39.90505792601037,
+    height: 5.017164579570791,
+  },
+  {
+    longitude: 116.44889282779063,
+    latitude: 39.904999504452185,
+    height: 5.013499252724749,
+  },
+  {
+    longitude: 116.4487103689467,
+    latitude: 39.90494676385401,
+    height: 5.012941064428758,
+  },
+  {
+    longitude: 116.44860641885083,
+    latitude: 39.90488759201506,
+    height: 5.008208502933502,
+  },
+  {
+    longitude: 116.44844503906712,
+    latitude: 39.90479698325847,
+    height: 5.015508566104133,
+  },
+  {
+    longitude: 116.4482937689117,
+    latitude: 39.90476389522905,
+    height: 5.0095671277606275,
+  },
+  {
+    longitude: 116.4481078179235,
+    latitude: 39.904702752670836,
+    height: 5.009898037853642,
+  },
+  {
+    longitude: 116.447995342516,
+    latitude: 39.904655382703645,
+    height: 5.018751400064918,
+  },
+  {
+    longitude: 116.44782983013182,
+    latitude: 39.90460011581634,
+    height: 5.009629145070781,
+  },
+  {
+    longitude: 116.44765774938917,
+    latitude: 39.904520586860606,
+    height: 5.017202839434978,
+  },
+  {
+    longitude: 116.44745073707867,
+    latitude: 39.904472871890064,
+    height: 5.01967428984734,
+  },
+  {
+    longitude: 116.44718895376383,
+    latitude: 39.90448244669299,
+    height: 5.01132421342996,
+  },
+  {
+    longitude: 116.44702848034446,
+    latitude: 39.9044684290256,
+    height: 5.012599232371398,
+  },
+  {
+    longitude: 116.44686249883246,
+    latitude: 39.90447176400651,
+    height: 5.0132946449539535,
+  },
+  {
+    longitude: 116.446891335626,
+    latitude: 39.904477664935285,
+    height: 5.011666074638061,
+  },
+  {
+    longitude: 116.44678364092529,
+    latitude: 39.90446903126559,
+    height: 5.011073526560228,
+  },
+  {
+    longitude: 116.44660056576502,
+    latitude: 39.90447270915379,
+    height: 5.01207655793344,
+  },
+  {
+    longitude: 116.44645129100708,
+    latitude: 39.904475707854466,
+    height: 5.012583047358632,
+  },
+  {
+    longitude: 116.4462796261699,
+    latitude: 39.90448347317541,
+    height: 5.016385482510129,
+  },
+  {
+    longitude: 116.44614722694666,
+    latitude: 39.904486132452156,
+    height: 5.0172122573890565,
+  },
+  {
+    longitude: 116.44599510926895,
+    latitude: 39.90448918765251,
+    height: 5.017797089712923,
+  },
+  {
+    longitude: 116.44591064856759,
+    latitude: 39.90449304191947,
+    height: 5.026181985401351,
+  },
+  {
+    longitude: 116.44534739123783,
+    latitude: 39.90448924693105,
+    height: 5.025299897368753,
+  },
+  {
+    longitude: 116.44533258355733,
+    latitude: 39.904769276685904,
+    height: 5.027189264236393,
+  },
+];
+const updateLine = () => {
+  let center = {
+    longitude: 116.45448909735077,
+    latitude: 39.90664167026053,
+    height: 5.01471818390532,
+  };
+
+  drawPolyline("test3", [
+    center,
+    {
+      longitude: 116.4490254182844,
+      latitude: 39.90505792601037,
+      height: 5.017164579570791,
+    },
+  ]);
+  let lineEntity = viewer.entities.getById("test3");
+  list.reduce((p, x) => {
+    return p.then(() => {
+      return new Promise((r) => {
+        setTimeout(() => {
+          r(updataEntityPosition(lineEntity, [center, x], "line"));
+        }, 500);
+      });
+    });
+  }, Promise.resolve());
+};
+const updatePoint = () => {
+  addIconPointByPosition(
+    viewer,
+    {
+      longitude: 116.45448909735077,
+      latitude: 39.90664167026053,
+      height: 5.01471818390532,
+    },
+    pic,
+    "position1",
+    "地点1",
+    "#d81e06"
+  );
+  let pickedEntity = viewer.entities.getById("position1");
+  flyToPoint({
+    longitude: 116.45448909735077,
+    latitude: 39.90664167026053,
+    height: 5.01471818390532,
+  });
+  list.reduce((p, x) => {
+    return p.then(() => {
+      return new Promise((r) => {
+        setTimeout(() => {
+          r(updataEntityPosition(pickedEntity, x, "point"));
+        }, 500);
+      });
+    });
+  }, Promise.resolve());
+};
+
+const playTrack = () => {
+  flyToPoint({
+    longitude: 116.45448909735077,
+    latitude: 39.90664167026053,
+    height: 5.01471818390532,
+  });
+  addIconPointByPosition(
+    viewer,
+    {
+      longitude: 116.45448909735077,
+      latitude: 39.90664167026053,
+      height: 5.01471818390532,
+    },
+    pic,
+    "position1",
+    "地点1",
+    "#d81e06"
+  );
+  let pickedEntity = viewer.entities.getById("position1");
+  list.reduce((p, x) => {
+    return p.then(() => {
+      return new Promise((r) => {
+        setTimeout(() => {
+          r(updataEntityPosition(pickedEntity, x, "point"));
+          r(createTrajectoryline(x));
+        }, 500);
+      });
+    });
+  }, Promise.resolve());
 };
 
 const KEY = "AuZhjW6H0pb4-3NSK_dDK4WeHwdrjQn_T-6PVQrY17HGVHwn5McFdEZiFoUYKCF0";

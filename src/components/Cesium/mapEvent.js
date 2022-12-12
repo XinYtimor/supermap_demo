@@ -45,7 +45,14 @@ export const drawOrdinaryEntity = (viewer, type) => {
 };
 
 //绘点
-export const addIconPoint = (viewer, pic, id, text, color, otherInfos) => {
+export const addIconPointByClick = (
+  viewer,
+  pic,
+  id,
+  text,
+  color,
+  otherInfos
+) => {
   let handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
   handler.setInputAction(function (e) {
     //获取点击位置笛卡尔坐标
@@ -91,6 +98,51 @@ export const addIconPoint = (viewer, pic, id, text, color, otherInfos) => {
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 };
 
+export const addIconPointByPosition = (
+  viewer,
+  position,
+  pic,
+  id,
+  text,
+  color,
+  otherInfos
+) => {
+  let point = new Cesium.Entity({
+    id,
+    label: {
+      text,
+      font: "12px",
+      scale: 0.1,
+      style: Cesium.LabelStyle.FILL,
+      fillColor: Cesium.Color.WHITE,
+      pixelOffset: new Cesium.Cartesian2(0, -65),
+      showBackground: true,
+      backgroundColor: "transparent",
+      // scaleByDistance: new Cesium.NearFarScalar(30, 1, 50, 0),
+    },
+    billboard: {
+      image: pic,
+      scale: 1,
+      horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
+      verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+      // scaleByDistance: new Cesium.NearFarScalar(50, 2.0, 1000, 0),
+      width: 40,
+      height: 40,
+      depthTestAgainstTerrain: true,
+      color: color ? Cesium.Color.fromCssColorString(color) : Cesium.Color.RED,
+    },
+    position: Cesium.Cartesian3.fromDegrees(
+      position.longitude,
+      position.latitude,
+      position.height
+    ),
+    otherInfos: otherInfos ? otherInfos : {},
+    // materialType, // 素材的类型
+  });
+  viewer.entities.add(point);
+  return point;
+};
+
 //编辑元素
 export const handleEdit = (viewer, entity) => {
   let editHandler = null;
@@ -106,13 +158,25 @@ export const handleEdit = (viewer, entity) => {
 };
 
 //绘线
-export const drawPolyline = (positions, config_) => {
+export const drawPolyline = (id, positions, config_) => {
   if (positions.length < 1) return;
   let config = config_ ? config_ : {};
+  let posi = [];
+
+  positions.forEach((item) => {
+    let x = Cesium.Cartesian3.fromDegrees(
+      item.longitude,
+      item.latitude,
+      item.height
+    );
+    posi.push(x);
+  });
+
   return viewer.entities.add({
+    id,
     name: "线几何对象",
     polyline: {
-      positions: positions,
+      positions: posi,
       width: config.width ? config.width : 5.0,
       material: new Cesium.PolylineGlowMaterialProperty({
         color: config.color
@@ -341,6 +405,52 @@ export const createDiv = (viewer, id, position, el) => {
   layer[id] = new cerateDiv(val);
 };
 
+//更新div位置
 export const updateDivLabel = (id, position) => {
   window.layer[id].changePosition([position.longitude, position.latitude]);
 };
+
+//飞到某处
+export function flyToPoint(posi) {
+  viewer.camera.setView({
+    destination: Cesium.Cartesian3.fromDegrees(
+      posi.longitude,
+      posi.latitude - 0.001,
+      posi.height + 260
+    ),
+    orientation: {
+      heading: 0.057143935920923816,
+      pitch: -1.0925426386876458,
+      roll: 6.191530127148629,
+    },
+  });
+}
+
+//更新实体的位置
+export function updataEntityPosition(entity, posi, type, data) {
+  let x;
+  if (type == "line") {
+    x = [
+      Cesium.Cartesian3.fromDegrees(
+        posi[0].longitude,
+        posi[0].latitude,
+        posi[0].height
+      ),
+      Cesium.Cartesian3.fromDegrees(
+        posi[1].longitude,
+        posi[1].latitude,
+        posi[1].height
+      ),
+    ];
+    entity.polyline.positions = new Cesium.CallbackProperty(() => {
+      return x;
+    }, false);
+  } else if (type === "point") {
+    let key = Object.keys(posi);
+
+    x = Cesium.Cartesian3.fromDegrees(posi[key[0]], posi[key[1]], posi[key[2]]);
+    entity.position = new Cesium.CallbackProperty(() => {
+      return x;
+    }, false);
+  }
+}
