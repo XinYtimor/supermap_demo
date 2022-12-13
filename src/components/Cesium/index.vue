@@ -30,6 +30,7 @@ import {
   updataEntityPosition,
   drawPolyline,
   flyToPoint,
+  descarteTolatAndLon,
 } from "./mapEvent";
 import pic from "../../assets/img/position.png";
 import cerateDiv from "./createDiv";
@@ -119,6 +120,16 @@ const mapOptions = [
       {
         value: "通视分析",
         label: "通视分析",
+        children: [
+          {
+            value: "设置观察点",
+            label: "设置观察点",
+          },
+          {
+            value: "设置目标点",
+            label: "设置目标点",
+          },
+        ],
       },
       {
         value: "制高点分析",
@@ -159,8 +170,8 @@ const change = (e) => {
   screenCoordinatesToLatitudeAndLongitude(viewer);
   // descarteToScreenCoordinates(viewer, latitudeAndLongitudeToDescarte(point));
   viewer.entities.removeAll();
-  let target = e[e.length - 1];
-  switch (target) {
+  let targetLabel = e[e.length - 1];
+  switch (targetLabel) {
     case "点":
       addIconPointByClick(viewer, pic, "test", "位置1", "#d81e06");
       break;
@@ -195,6 +206,12 @@ const change = (e) => {
       break;
     case "更改线的位置":
       updateLine();
+      break;
+    case "设置观察点":
+      observe();
+      break;
+    case "设置目标点":
+      target();
       break;
     default:
       console.log("未匹配");
@@ -806,6 +823,66 @@ const playTrack = () => {
   }, Promise.resolve());
 };
 
+const isAddObservePoint = ref(true);
+//通视分析-观察点
+const observe = () => {
+  window.sightline = new Cesium.Sightline(viewer.scene);
+  sightline.build();
+  if (isAddObservePoint.value) {
+    window.pointByObserve = new Cesium.DrawHandler(
+      viewer,
+      Cesium.DrawMode.Point
+    );
+    //激活绘制点类
+    pointByObserve.activate();
+    pointByObserve.drawEvt.addEventListener(function (result) {
+      let observePosi = result.object.position;
+      sightline.viewPosition = descarteTolatAndLon(observePosi);
+      isAddObservePoint.value = false;
+    });
+  }
+};
+
+//通视分析-目标点
+const target = () => {
+  handler.setInputAction(function () {
+    handler.removeInputAction(Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+    handler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK);
+  }, Cesium.ScreenSpaceEventType.RIGHT_CLICK);
+  handler.setInputAction(function (evt) {
+    //鼠标移动，更新最后一次添加的目标点的位置
+    var position = viewer.scene.pickPosition(evt.endPosition);
+
+    if (num.value > 0) {
+      sightline.removeTargetPoint("point0");
+
+      var cartographic = descarteTolatAndLon(position);
+
+      var flag = sightline.addTargetPoint({
+        position: cartographic,
+        name: "point0",
+      });
+    }
+  }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+  handler.setInputAction(function (e) {
+    var position = viewer.scene.pickPosition(e.position);
+    addTarget(position);
+  }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+};
+const num = ref(0);
+//通视分析
+const addTarget = (CartesianPosition) => {
+  //将获取的点的位置转化成经纬度
+  var cartographic = descarteTolatAndLon(CartesianPosition);
+  console.log("cartographic", cartographic);
+  //添加目标点
+  var name = num.value++;
+  sightline.addTargetPoint({
+    position: cartographic,
+    name: name,
+  });
+};
+
 const KEY = "AuZhjW6H0pb4-3NSK_dDK4WeHwdrjQn_T-6PVQrY17HGVHwn5McFdEZiFoUYKCF0";
 const serverUrl =
   "http://10.12.6.38:8090/iserver/services/plot-jingyong/rest/plot";
@@ -827,6 +904,7 @@ onMounted(() => {
       key: KEY,
     })
   );
+  window.handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
 
   window.scene = viewer.scene;
   let widget = viewer.cesiumWidget;
