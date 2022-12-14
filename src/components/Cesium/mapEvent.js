@@ -410,6 +410,11 @@ export const updateDivLabel = (id, position) => {
   window.layer[id].changePosition([position.longitude, position.latitude]);
 };
 
+//清除div
+export const clearDivLabel = (id) => {
+  window.layer[id].remove();
+};
+
 //飞到某处
 export function flyToPoint(posi) {
   viewer.camera.setView({

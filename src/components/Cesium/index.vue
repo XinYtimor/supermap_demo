@@ -31,6 +31,7 @@ import {
   drawPolyline,
   flyToPoint,
   descarteTolatAndLon,
+  clearDivLabel,
 } from "./mapEvent";
 import pic from "../../assets/img/position.png";
 import cerateDiv from "./createDiv";
@@ -157,6 +158,10 @@ const mapOptions = [
         value: "更新div位置",
         label: "更新div位置",
       },
+      {
+        value: "移除div",
+        label: "移除div",
+      },
     ],
   },
 ];
@@ -188,6 +193,7 @@ const change = (e) => {
         { longitude: 116.45388048381606, latitude: 39.90368684766768 },
         document.getElementById("label")
       );
+
       break;
     case "更新div位置":
       updateDivLabel("div1", {
@@ -212,6 +218,9 @@ const change = (e) => {
       break;
     case "设置目标点":
       target();
+      break;
+    case "移除div":
+      clearDivLabel("div1");
       break;
     default:
       console.log("未匹配");
