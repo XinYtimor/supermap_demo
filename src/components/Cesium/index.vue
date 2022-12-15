@@ -32,6 +32,9 @@ import {
   flyToPoint,
   descarteTolatAndLon,
   clearDivLabel,
+  distance,
+  area,
+  heightMeasure,
 } from "./mapEvent";
 import pic from "../../assets/img/position.png";
 import cerateDiv from "./createDiv";
@@ -221,6 +224,15 @@ const change = (e) => {
       break;
     case "移除div":
       clearDivLabel("div1");
+      break;
+    case "测距":
+      distance(viewer);
+      break;
+    case "测面":
+      area(viewer);
+      break;
+    case "测高":
+      heightMeasure(viewer);
       break;
     default:
       console.log("未匹配");

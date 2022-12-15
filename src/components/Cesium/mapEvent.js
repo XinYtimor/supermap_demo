@@ -459,3 +459,72 @@ export function updataEntityPosition(entity, posi, type, data) {
     }, false);
   }
 }
+
+// 标点测距
+export const distance = (viewer) => {
+  let handlerDis = new Cesium.MeasureHandler(
+    viewer,
+    Cesium.MeasureMode.Distance,
+    //Cesium.MeasureMode.Area ：面积模式
+    // Cesium.MeasureMode.Distance ： 距离量算模式
+    // Cesium.MeasureMode.DVH ： 空间距离、水平距离、垂直距离三分量量算模式。
+    0
+  );
+  //注册测距功能事件
+  handlerDis.activate();
+  // activate() 激活
+  // deactivate() 关闭
+  // clear() 清空绘制的要素
+  console.log(handlerDis.measureEvt);
+
+  handlerDis.measureEvt.addEventListener(function (result) {
+    console.log(result);
+    var dis = Number(result.distance);
+    var distance =
+      dis > 1000 ? (dis / 1000).toFixed(2) + "km" : dis.toFixed(2) + "m";
+    handlerDis.disLabel.text = "距离:" + distance;
+  });
+};
+
+// 测面积
+export const area = (viewer) => {
+  let handlerArea = new Cesium.MeasureHandler(
+    viewer,
+    Cesium.MeasureMode.Area,
+    0
+  );
+  handlerArea.activate();
+  handlerArea.measureEvt.addEventListener(function (result) {
+    var mj = Number(result.area);
+    var area =
+      mj > 1000000 ? (mj / 1000000).toFixed(2) + "km²" : mj.toFixed(2) + "㎡";
+    handlerArea.areaLabel.text = "面积:" + area;
+  });
+};
+
+// 测高度
+export const heightMeasure = () => {
+  let handlerHeight = new Cesium.MeasureHandler(
+    viewer,
+    Cesium.MeasureMode.DVH,
+    0
+  );
+  handlerHeight.activate();
+  handlerHeight.measureEvt.addEventListener(function (result) {
+    var distance =
+      result.distance > 1000
+        ? (result.distance / 1000).toFixed(2) + "km"
+        : result.distance + "m";
+    var vHeight =
+      result.verticalHeight > 1000
+        ? (result.verticalHeight / 1000).toFixed(2) + "km"
+        : result.verticalHeight + "m";
+    var hDistance =
+      result.horizontalDistance > 1000
+        ? (result.horizontalDistance / 1000).toFixed(2) + "km"
+        : result.horizontalDistance + "m";
+    handlerHeight.disLabel.text = "空间距离:" + distance;
+    handlerHeight.vLabel.text = "垂直高度:" + vHeight;
+    handlerHeight.hLabel.text = "水平距离:" + hDistance;
+  });
+};
