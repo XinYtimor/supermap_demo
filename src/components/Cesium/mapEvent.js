@@ -311,7 +311,7 @@ export const descarteTolatAndLon = (position) => {
 };
 
 //绘面(可编辑)
-export const drawCanEditPolygon = (materialItem) => {
+export const drawCanEditPolygon = (viewer) => {
   const positions = [];
   let isDrawing = true;
   let drawingEntity = null;
@@ -328,9 +328,7 @@ export const drawCanEditPolygon = (materialItem) => {
             positions: [],
           },
           perPositionHeight: true,
-          material: materialItem?.color
-            ? Cesium.Color.fromCssColorString(materialItem.color).withAlpha(0.5)
-            : Cesium.Color.RED.withAlpha(0.5),
+          material: Cesium.Color.RED.withAlpha(0.5),
         },
       };
       this.positions = positions;
@@ -628,4 +626,16 @@ export const heightMeasure = () => {
     handlerHeight.vLabel.text = "垂直高度:" + vHeight;
     handlerHeight.hLabel.text = "水平距离:" + hDistance;
   });
+};
+
+//显示笔型鼠标
+export const enableBodyDrawCur = (viewer, isActive) => {
+  viewer.enableCursorStyle = true;
+  let list = document.body.classList;
+  list.remove("drawCur");
+  if (isActive) {
+    viewer.enableCursorStyle = false;
+    viewer._element.style.cursor = "";
+    list.add("drawCur");
+  }
 };

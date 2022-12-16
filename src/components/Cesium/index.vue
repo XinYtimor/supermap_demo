@@ -35,6 +35,9 @@ import {
   distance,
   area,
   heightMeasure,
+  enableBodyDrawCur,
+  handleEdit,
+  drawCanEditPolygon,
 } from "./mapEvent";
 import pic from "../../assets/img/position.png";
 import cerateDiv from "./createDiv";
@@ -168,6 +171,15 @@ const mapOptions = [
     ],
   },
 ];
+const areaClick = () => {
+  handler.setInputAction(function (e) {
+    let pick = viewer.scene.pick(e.position);
+
+    console.log(pick.id._id);
+    let entity = viewer.entities.getById(pick.id._id);
+    handleEdit(viewer, entity);
+  }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+};
 
 const change = (e) => {
   let point = {
@@ -178,6 +190,7 @@ const change = (e) => {
   screenCoordinatesToLatitudeAndLongitude(viewer);
   // descarteToScreenCoordinates(viewer, latitudeAndLongitudeToDescarte(point));
   viewer.entities.removeAll();
+  enableBodyDrawCur(viewer, true);
   let targetLabel = e[e.length - 1];
   switch (targetLabel) {
     case "点":
@@ -236,6 +249,9 @@ const change = (e) => {
       break;
     case "线(可编辑)":
       drawLineEdit(viewer);
+      break;
+    case "面(可编辑)":
+      drawCanEditPolygon(viewer);
       break;
     default:
       console.log("未匹配");
@@ -1003,6 +1019,7 @@ onMounted(() => {
       widget.showErrorPanel(title, undefined, e);
     }
   }
+  areaClick();
 });
 </script>
 
