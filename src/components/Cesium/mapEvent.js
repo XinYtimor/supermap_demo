@@ -94,8 +94,16 @@ export const addIconPointByClick = (
       // materialType, // 素材的类型
     });
     viewer.entities.add(point);
+
     return point;
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+  handler.setInputAction(() => {
+    handler.removeInputAction(Cesium.ScreenSpaceEventType.LEFT_CLICK);
+    handler = handler && handler.destroy();
+    // let pickedEntity = viewer.entities.getById("test");
+    // handleEdit(viewer, pickedEntity);
+  }, Cesium.ScreenSpaceEventType.RIGHT_CLICK);
 };
 
 export const addIconPointByPosition = (
@@ -143,8 +151,96 @@ export const addIconPointByPosition = (
   return point;
 };
 
+// 绘制可编辑的线
+export const drawLineEdit = (viewer) => {
+  const positions = [];
+  let drawingEntity = null;
+  let poly, entity;
+  let isDrawing = true;
+  let handler = new Cesium.ScreenSpaceEventHandler(viewer.canvas);
+  let polyLineEntity = (function () {
+    function _(positions) {
+      // polyline 配置
+      this.options = {
+        name: "polyline",
+        polyline: {
+          show: true,
+          positions: [],
+          material: Cesium.Color.GREEN,
+          width: 3,
+        },
+      };
+      this.positions = positions;
+      this._init();
+    }
+
+    _.prototype._init = function () {
+      let _self = this;
+      this.options.polyline.positions = new Cesium.CallbackProperty(
+        function () {
+          return _self.positions;
+        },
+        false
+      );
+      drawingEntity = entity = viewer.entities.add(this.options);
+    };
+    return _;
+  })();
+  handler.setInputAction(function (movement) {
+    let ent = viewer.selectedEntity;
+    // 当前选中的entity不是绘制的entity，就return。实现绘制时也能选择
+    if (ent && drawingEntity !== ent) {
+      return;
+    }
+    isDrawing = true;
+    let cartesian = viewer.scene.pickPosition(movement.position);
+    if (positions.length == 0) {
+      positions.push(cartesian.clone());
+    }
+    positions.push(cartesian);
+  }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+  handler.setInputAction((movement) => {
+    let cartesian = viewer.scene.pickPosition(movement.endPosition);
+    if (positions.length >= 2) {
+      if (!Cesium.defined(poly)) {
+        poly = new polyLineEntity(positions);
+      } else {
+        if (cartesian != undefined) {
+          positions.pop();
+          positions.push(cartesian);
+        }
+      }
+    }
+  }, Cesium.ScreenSpaceEventType.MOUSE_MOVE);
+  handler.setInputAction((movement) => {
+    positions.pop();
+
+    isDrawing = false;
+    handler = handler && handler.destroy(); // clear and empty the handler.
+    // 继续绘制
+    // this.drawLine(this.handleEdit);
+    handleEdit(viewer, entity);
+  }, Cesium.ScreenSpaceEventType.RIGHT_CLICK);
+};
+
 //编辑元素
 export const handleEdit = (viewer, entity) => {
+  console.log("entity", entity);
+  // let editHandler = null;
+  // if (!entity) {
+  //   editHandler && editHandler.deactivate();
+  //   return;
+  // }
+  // if (!editHandler) {
+  //   let editHandler = new Cesium.EditHandler(viewer, entity);
+  //   console.log(editHandler);
+  //   editHandler.isEditZ = true;
+  //   editHandler.activate();
+  // } else {
+  //   editHandler.deactivate();
+  //   editHandler.setEditObject(entity);
+  //   editHandler.activate();
+  // }
   let editHandler = null;
   if (!entity) {
     editHandler && editHandler.deactivate();
@@ -152,7 +248,12 @@ export const handleEdit = (viewer, entity) => {
   }
   if (!editHandler) {
     editHandler = new Cesium.EditHandler(viewer, entity);
+    console.log("editHandler", editHandler);
     editHandler.isEditZ = true;
+    editHandler.activate();
+  } else {
+    editHandler.deactivate();
+    editHandler.setEditObject(entity);
     editHandler.activate();
   }
 };

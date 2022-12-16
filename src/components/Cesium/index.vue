@@ -19,7 +19,7 @@ import {
   addIconPointByClick,
   addIconPointByPosition,
   removeAllEntity,
-  handleEdit,
+  drawLineEdit,
   drawOrdinaryEntity,
   descarteToScreenCoordinates,
   latitudeAndLongitudeToDescarte,
@@ -233,6 +233,9 @@ const change = (e) => {
       break;
     case "测高":
       heightMeasure(viewer);
+      break;
+    case "线(可编辑)":
+      drawLineEdit(viewer);
       break;
     default:
       console.log("未匹配");
