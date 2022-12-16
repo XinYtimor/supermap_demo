@@ -38,6 +38,7 @@ import {
   enableBodyDrawCur,
   handleEdit,
   drawCanEditPolygon,
+  getEntityByPick,
 } from "./mapEvent";
 import pic from "../../assets/img/position.png";
 import cerateDiv from "./createDiv";
@@ -171,15 +172,6 @@ const mapOptions = [
     ],
   },
 ];
-const areaClick = () => {
-  handler.setInputAction(function (e) {
-    let pick = viewer.scene.pick(e.position);
-
-    console.log(pick.id._id);
-    let entity = viewer.entities.getById(pick.id._id);
-    handleEdit(viewer, entity);
-  }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
-};
 
 const change = (e) => {
   let point = {
@@ -1019,7 +1011,8 @@ onMounted(() => {
       widget.showErrorPanel(title, undefined, e);
     }
   }
-  areaClick();
+
+  getEntityByPick(viewer);
 });
 </script>
 

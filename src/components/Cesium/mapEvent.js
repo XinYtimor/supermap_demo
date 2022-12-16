@@ -639,3 +639,13 @@ export const enableBodyDrawCur = (viewer, isActive) => {
     list.add("drawCur");
   }
 };
+
+// 通过点击实体来实现编辑实体
+export const getEntityByPick = (viewer) => {
+  handler.setInputAction(function (e) {
+    let pick = viewer.scene.pick(e.position);
+    console.log(pick.id._id);
+    let entity = viewer.entities.getById(pick.id._id);
+    handleEdit(viewer, entity);
+  }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+};
