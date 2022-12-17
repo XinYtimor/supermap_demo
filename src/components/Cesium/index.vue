@@ -39,6 +39,7 @@ import {
   handleEdit,
   drawCanEditPolygon,
   getEntityByPick,
+  latitudeAndLongitudeToScreenCoordinates,
 } from "./mapEvent";
 import pic from "../../assets/img/position.png";
 import cerateDiv from "./createDiv";
@@ -244,6 +245,9 @@ const change = (e) => {
       break;
     case "面(可编辑)":
       drawCanEditPolygon(viewer);
+      break;
+    case "热力图":
+      showHeatMap();
       break;
     default:
       console.log("未匹配");
@@ -1014,6 +1018,105 @@ onMounted(() => {
 
   getEntityByPick(viewer);
 });
+
+const showHeatMap = () => {
+  let data = [
+    {
+      lon: 116.4536589046941,
+      lat: 39.904588723639186,
+      value: 20,
+    },
+    {
+      lon: 116.45055888425955,
+      lat: 39.90619495778332,
+      value: 10,
+    },
+    {
+      lon: 116.45388048381606,
+      lat: 39.90368684766768,
+      value: 15,
+    },
+    { lon: 116.44830877344315, lat: 39.90531110627574, value: 23 },
+    {
+      lon: 116.44630024308788,
+      lat: 39.906526626472086,
+      value: 40,
+    },
+    {
+      lon: 116.44680114932157,
+      lat: 39.90353052489719,
+      value: 33,
+    },
+  ];
+
+  var heatMap1 = createHeatMap(latitudeAndLongitudeToScreenCoordinates(data));
+  creatRectangle(viewer, heatMap1);
+
+  // 创建热力图
+  function createHeatMap(data) {
+    console.log("data", data);
+    // 创建元素
+    var heatDoc = document.createElement("div");
+    heatDoc.setAttribute(
+      "style",
+      "width:1000px;height:1000px;margin: 0px;display: none;"
+    );
+    document.body.appendChild(heatDoc);
+    // 创建热力图对象
+    var heatmap = h337.create({
+      container: heatDoc,
+      radius: 20,
+      maxOpacity: 0.5,
+      minOpacity: 0,
+      blur: 0.75,
+      gradient: {
+        0.9: "red",
+        0.8: "orange",
+        0.7: "yellow",
+        0.5: "blue",
+        0.3: "green",
+      },
+    });
+    // 添加数据
+    heatmap.setData({
+      max: 40,
+      data: data,
+    });
+    return heatmap;
+  }
+  function creatRectangle(viewer, heatMap) {
+    viewer.entities.add({
+      name: "Rotating rectangle with rotating texture coordinate",
+      show: true,
+      rectangle: {
+        coordinates: Cesium.Rectangle.fromCartesianArray([
+          Cesium.Cartesian3.fromDegrees(
+            116.44468241146141,
+            39.911940790287666,
+            0
+          ),
+          Cesium.Cartesian3.fromDegrees(
+            116.46356477866011,
+            39.9121203978451,
+            0
+          ),
+          Cesium.Cartesian3.fromDegrees(
+            116.4631813104606,
+            39.90388588959914,
+            0
+          ),
+          Cesium.Cartesian3.fromDegrees(
+            116.44437341789303,
+            39.902900077003565,
+            0
+          ),
+        ]),
+
+        material: heatMap._renderer.canvas, // 核心语句，填充热力图
+      },
+    });
+  }
+};
 </script>
 
 <style scoped lang="less">

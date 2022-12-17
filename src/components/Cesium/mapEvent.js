@@ -429,6 +429,26 @@ export const screenCoordinatesToLatitudeAndLongitude = (viewer) => {
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 };
 
+//经纬度转屏幕坐标
+export function latitudeAndLongitudeToScreenCoordinates(positions) {
+  let posiDatas = [];
+  let position;
+  let chanedc;
+  positions.forEach((item) => {
+    position = Cesium.Cartesian3.fromDegrees(item.lon, item.lat, 0);
+    chanedc = Cesium.SceneTransforms.wgs84ToWindowCoordinates(
+      viewer.scene,
+      position
+    );
+    console.log("chanedc", chanedc);
+    chanedc.value = item.value;
+    chanedc.x = chanedc.x.toFixed();
+    chanedc.y = chanedc.y.toFixed();
+    posiDatas.push(chanedc);
+  });
+  return posiDatas;
+}
+
 //可视域分析
 export const visibleRange = (viewer) => {
   let handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
