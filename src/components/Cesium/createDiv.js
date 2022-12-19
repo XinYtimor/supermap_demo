@@ -1,5 +1,8 @@
+const screenWidth = document.body.clientWidth;
+
 const divLabel = class {
   constructor(t) {
+    this.state = "view";
     if (
       ((this.viewer = t.viewer),
       (this.height = t.height),
@@ -17,12 +20,13 @@ const divLabel = class {
     if (!this.vmInstance || !this.vmInstance.style)
       throw "Not passing available Dom";
     (this.vmInstance.style.position = "absolute"),
-      (this.vmInstance.style.zIndex = 10),
+      (this.vmInstance.style.zIndex = 0),
       this.vmInstance.classList.contains("Cesium-divLabel") ||
         this.vmInstance.classList.add("Cesium-divLabel"),
       (this.show = !0),
       (this.wrapper = document.querySelectorAll(".cesium-viewer")[0]);
     this.wrapper.appendChild(this.vmInstance), this.addPostRender();
+    this.addPostRender();
   }
   addPostRender() {
     this.viewer.scene.postRender.addEventListener(this.postRender, this);
@@ -37,7 +41,7 @@ const divLabel = class {
           ? ((this.vmInstance.style.top = t.y + this.offset[1] + "px"),
             (e = this.vmInstance.offsetWidth),
             (this.vmInstance.style.left = t.x - e / 2 + this.offset[0] + "px"))
-          : ((this.vmInstance.style.top = t.y - 220 + "px"),
+          : ((this.vmInstance.style.top = t.y - 200 + "px"),
             (e = this.vmInstance.offsetWidth),
             (this.vmInstance.style.left = t.x - e / 2 + 190 + "px")),
         (t = this.viewer.camera.position),
@@ -45,14 +49,15 @@ const divLabel = class {
           this.viewer.scene.globe.ellipsoid.cartesianToCartographic(t).height),
         (e += this.viewer.scene.globe.ellipsoid.maximumRadius),
         !(this.Cesium.Cartesian3.distance(t, this.position) > e) &&
-        this.viewer.camera.positionCartographic.height < 5e7
+        this.viewer.camera.positionCartographic.height < 5e7 &&
+        this.state === "view"
           ? (this.vmInstance.style.display = "block")
           : (this.vmInstance.style.display = "none")));
   }
   remove() {
-    this.vmInstance.remove,
-      this.vmInstance.remove(),
-      this.viewer.scene.postRender.removeEventListener(this.postRender, this);
+    this.state = "hidden";
+    this.vmInstance.style.display = "none";
+    this.viewer.scene.postRender.removeEventListener(this.postRender, this);
   }
   toggleShow(t) {
     return (

@@ -7,8 +7,10 @@
       :show-all-levels="false"
     />
   </div>
-  <div id="cesiumContainer">
-    <div id="label" style="display: none">label</div>
+  <div id="cesiumContainer"></div>
+  <div id="label" style="display: none">
+    <el-button @click="close">关闭</el-button>
+    label
   </div>
 </template>
 
@@ -175,6 +177,117 @@ const mapOptions = [
   },
 ];
 
+const areaClick = () => {
+  let dialogDom = document.getElementById("label");
+
+  let count = 0;
+  // dialogDom.style.display = "none";
+  window.layer = null;
+  handler.setInputAction(function (e) {
+    let pick = viewer.scene.pick(e.position);
+
+    if (pick) {
+      // dialogDom.style.display = "block";
+      if (count === 0) {
+        let val = {
+          viewer: viewer,
+          position: [119.98488628744329, 31.84460882933765],
+          height: 0,
+          dom: document.getElementById("label"),
+        };
+        layer = new divLabel(val);
+        count++;
+      }
+      let currentPosi = descarteTolatAndLon(pick.primitive.position);
+      layer.changePosition([currentPosi.longitude, currentPosi.latitude]);
+    }
+  }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+};
+
+const positioningShows = () => {
+  let point = [
+    {
+      longitude: 118.89247146987816,
+      latitude: 28.948268323883386,
+      height: 0,
+      otherInfo: {
+        placeNames: "公园1",
+      },
+    },
+    {
+      longitude: 118.96025161536426,
+      latitude: 28.937180392191642,
+      height: 0,
+      otherInfo: {
+        placeNames: "公园2",
+      },
+    },
+    {
+      longitude: 118.95759195788409,
+      latitude: 28.97672063619454,
+      height: 0,
+      otherInfo: {
+        placeNames: "公园3",
+      },
+    },
+    {
+      longitude: 119.01089034830217,
+      latitude: 28.95981215568784,
+      height: 0,
+      otherInfo: {
+        placeNames: "公园4",
+      },
+    },
+    {
+      longitude: 118.93482381844979,
+      latitude: 28.928694381146073,
+      height: 0,
+      otherInfo: {
+        placeNames: "公园5",
+      },
+    },
+    {
+      longitude: 118.8929042788992,
+      latitude: 28.988688104591287,
+      height: 0,
+      otherInfo: {
+        placeNames: "公园6",
+      },
+    },
+    {
+      longitude: 118.84888828484016,
+      latitude: 28.986037977221045,
+      height: 0,
+      otherInfo: {
+        placeNames: "公园7",
+      },
+    },
+    {
+      longitude: 118.88753489465167,
+      latitude: 28.908044344073172,
+      height: 0,
+      otherInfo: {
+        placeNames: "公园8",
+      },
+    },
+  ];
+  let num = 0;
+  point.forEach((item) => {
+    item.id = num++;
+    item.height = 0;
+
+    addIconPointByPosition(
+      viewer,
+      item,
+      pic,
+      item.id,
+      "jk",
+      "#d81e06",
+      item.otherInfo
+    );
+  });
+};
+
 const change = (e) => {
   let point = {
     longitude: 116.45388048381606,
@@ -197,12 +310,14 @@ const change = (e) => {
       drawOrdinaryEntity(viewer, "Polygon");
       break;
     case "新建div":
-      createDiv(
-        viewer,
-        "div1",
-        { longitude: 116.45388048381606, latitude: 39.90368684766768 },
-        document.getElementById("label")
-      );
+      // createDiv(
+      //   viewer,
+      //   "div1",
+      //   { longitude: 116.45388048381606, latitude: 39.90368684766768 },
+      //   document.getElementById("label")
+      // );
+      positioningShows();
+      areaClick();
 
       break;
     case "更新div位置":
@@ -211,6 +326,7 @@ const change = (e) => {
         latitude: 40.90368684766768,
       });
       break;
+
     case "可视域分析":
       visibleRange(viewer);
       break;
@@ -254,6 +370,10 @@ const change = (e) => {
       console.log("未匹配");
       break;
   }
+};
+const close = () => {
+  window.layer.remove();
+  areaClick()
 };
 
 let tempPoints = [];
@@ -975,8 +1095,7 @@ onMounted(() => {
     dirLightOptions
   );
   scene.addLightSource(directionalLight_1);
-  viewer.scene.globe.depthTestAgainstTerrain = true;
-
+  viewer.scene.globe.depthTestAgainstTerrain = true; //开启地形遮挡
   try {
     //打开所发布三维服务下的所有图层
     // var url = "http://10.12.6.38:8090/iserver/services/3D-CBD/rest/realspace";
