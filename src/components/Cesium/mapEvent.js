@@ -664,7 +664,7 @@ export const enableBodyDrawCur = (viewer, isActive) => {
 export const getEntityByPick = (viewer) => {
   handler.setInputAction(function (e) {
     let pick = viewer.scene.pick(e.position);
-    console.log(pick.id._id);
+    console.log("id", pick.id._id);
     let entity = viewer.entities.getById(pick.id._id);
     handleEdit(viewer, entity);
   }, Cesium.ScreenSpaceEventType.LEFT_CLICK);

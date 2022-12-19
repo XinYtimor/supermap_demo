@@ -21,8 +21,8 @@ const divLabel = class {
       this.vmInstance.classList.contains("Cesium-divLabel") ||
         this.vmInstance.classList.add("Cesium-divLabel"),
       (this.show = !0),
-      t.viewer.container.appendChild(this.vmInstance),
-      this.addPostRender();
+      (this.wrapper = document.querySelectorAll(".cesium-viewer")[0]);
+    this.wrapper.appendChild(this.vmInstance), this.addPostRender();
   }
   addPostRender() {
     this.viewer.scene.postRender.addEventListener(this.postRender, this);

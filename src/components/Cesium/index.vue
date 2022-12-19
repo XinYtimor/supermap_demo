@@ -7,8 +7,9 @@
       :show-all-levels="false"
     />
   </div>
-  <div id="cesiumContainer"></div>
-  <div id="label" style="display: none">label</div>
+  <div id="cesiumContainer">
+    <div id="label" style="display: none">label</div>
+  </div>
 </template>
 
 <script setup>
